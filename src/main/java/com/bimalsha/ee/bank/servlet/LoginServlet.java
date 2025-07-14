@@ -32,7 +32,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("userEmail", email);
             session.setAttribute("userRole", userRole);
             session.setAttribute("authenticated", true);
-            
+
 
             // Redirect based on role
             if ("EMPLOYEE".equals(userRole)) {
