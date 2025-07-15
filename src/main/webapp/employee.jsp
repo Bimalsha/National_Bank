@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <html>
 <head>
@@ -19,7 +22,7 @@
         }
     </script>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen">
+<body class="bg-gray-100 font-sans min-h-screen" onload="loadAccountTypes();">
 <!-- Header -->
 <header class="bg-bank-blue text-white shadow-md">
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -255,7 +258,7 @@
                         <label for="userSearch" class="block text-gray-700 font-medium mb-2">Search User</label>
                         <div class="flex">
                             <input type="text" id="userSearch" placeholder="Enter user name, ID, or account number" class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:border-bank-blue">
-                            <button type="button" class="px-4 py-2 bg-bank-blue text-white rounded-r-md hover:bg-bank-blue-dark">Search</button>
+                            <button type="button" onclick="searchUser()" class="px-4 py-2 bg-bank-blue text-white rounded-r-md hover:bg-bank-blue-dark">Search</button>
                         </div>
                     </div>
 
@@ -287,20 +290,12 @@
                             <label for="initialDeposit" class="block text-gray-700 font-medium mb-2">Initial Deposit</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500">$</span>
+                                    <span class="text-gray-500">LKR</span>
                                 </div>
                                 <input type="text" id="initialDeposit" class="w-full pl-8 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue" placeholder="0.00">
                             </div>
                         </div>
-                        <div>
-                            <label for="currency" class="block text-gray-700 font-medium mb-2">Currency</label>
-                            <select id="currency" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                                <option value="usd">USD - US Dollar</option>
-                                <option value="eur">EUR - Euro</option>
-                                <option value="gbp">GBP - British Pound</option>
-                                <option value="jpy">JPY - Japanese Yen</option>
-                            </select>
-                        </div>
+
                         <div>
                             <label for="branchCode" class="block text-gray-700 font-medium mb-2">Branch Code</label>
                             <select id="branchCode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
@@ -679,30 +674,204 @@
             });
         }
     });
-</script>
-<script>
     function showSection(sectionId) {
+        console.log('Showing section:', sectionId);
+
         // Hide all sections
         document.querySelectorAll('.section').forEach(section => {
             section.classList.add('hidden');
         });
 
         // Show the selected section
-        document.getElementById(sectionId).classList.remove('hidden');
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.classList.remove('hidden');
+        } else {
+            console.error('Section not found:', sectionId);
+            return;
+        }
 
         // Update active menu item
         document.querySelectorAll('nav a').forEach(item => {
-            item.classList.remove('border-bank-accent', 'text-bank-blue');
+            item.classList.remove('border-l-4', 'border-bank-accent', 'text-bank-blue');
             item.classList.add('text-gray-700');
         });
 
         // Find and activate the clicked menu item
-        const menuItem = document.querySelector(`a[onclick="showSection('${sectionId}')"]`);
+        const menuItem = document.querySelector(`nav a[onclick*="'${sectionId}'"]`);
         if (menuItem) {
             menuItem.classList.remove('text-gray-700');
-            menuItem.classList.add('border-bank-accent', 'text-bank-blue');
+            menuItem.classList.add('border-l-4', 'border-bank-accent', 'text-bank-blue');
         }
     }
+
 </script>
+
+<script>
+    //<![CDATA[
+    function showSection(sectionId) {
+        console.log('Showing section:', sectionId);
+
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.add('hidden');
+        });
+
+        // Show the selected section
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.classList.remove('hidden');
+        } else {
+            console.error('Section not found:', sectionId);
+            return;
+        }
+
+        // Update active menu item
+        document.querySelectorAll('nav a').forEach(item => {
+            item.classList.remove('border-l-4', 'border-bank-accent', 'text-bank-blue');
+            item.classList.add('text-gray-700');
+        });
+
+        // Find and activate the clicked menu item
+        const menuItem = document.querySelector('nav a[onclick*="\'' + sectionId + '\'"]');
+        if (menuItem) {
+            menuItem.classList.remove('text-gray-700');
+            menuItem.classList.add('border-l-4', 'border-bank-accent', 'text-bank-blue');
+        }
+    }
+    //]]>
+</script>
+
+<script>
+    //<![CDATA[
+    function searchUser() {
+        console.log('Searching for user...');
+        // Get the search input value
+        const searchInput = document.getElementById('userSearch');
+        if (!searchInput) {
+            console.error('Search input element not found');
+            return;
+        }
+
+        const searchTerm = searchInput.value.trim();
+
+        // Get the selected user display area
+        const selectedUserSection = document.querySelector('#openAccount .mb-6.p-4.border');
+
+        if (!searchTerm) {
+            alert('Please enter a search term');
+            return;
+        }
+
+        // Show loading state
+        selectedUserSection.innerHTML =
+            '<h3 class="text-lg font-medium text-gray-800 mb-2">Searching...</h3>' +
+            '<div class="flex items-center">' +
+            '<div class="animate-pulse bg-gray-300 w-12 h-12 rounded-full"></div>' +
+            '<div class="ml-4 animate-pulse">' +
+            '<div class="h-4 bg-gray-300 rounded w-32 mb-2"></div>' +
+            '<div class="h-3 bg-gray-300 rounded w-48"></div>' +
+            '</div>' +
+            '</div>';
+
+        // Send request to the servlet
+        fetch('customerSearchByEmail?searchTerm=' + encodeURIComponent(searchTerm) + '&searchType=email')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.length > 0) {
+                    // Get the first user from the results
+                    const user = data[0];
+
+                    // Calculate initials from name
+                    const initials = user.name ? user.name.split(' ')
+                        .map(n => n.charAt(0))
+                        .join('')
+                        .toUpperCase() : 'U';
+
+                    console.log('User found:', user);
+
+                    // Update the selected user UI - avoid template literals
+                    selectedUserSection.innerHTML =
+                        '<h3 class="text-lg font-medium text-gray-800 mb-2">Selected User</h3>' +
+                        '<div class="flex items-center">' +
+                        '<div class="w-12 h-12 bg-bank-blue rounded-full flex items-center justify-center text-white text-xl font-bold">' +
+                        initials +
+                        '</div>' +
+                        '<div class="ml-4">' +
+                        '<p class="font-medium">' + (user.name || 'Unknown') + '</p>' +
+                        '<p class="text-sm text-gray-600">ID: ' + user.id + ' • Email: ' + (user.email || 'N/A') + ' • Contact: ' + (user.contact || 'N/A') + '</p>' +
+                        '<input type="hidden" name="userId" value="' + user.id + '">' +
+                        '</div>' +
+                        '</div>';
+                } else {
+                    // No user found
+                    console.log('No user found for search term:', searchTerm);
+                    selectedUserSection.innerHTML =
+                        '<h3 class="text-lg font-medium text-gray-800 mb-2">No User Found</h3>' +
+                        '<p class="text-sm text-gray-600">No user was found with the search term: ' + searchTerm + '</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching for user:', error);
+                selectedUserSection.innerHTML =
+                    '<h3 class="text-lg font-medium text-gray-800 mb-2">Error</h3>' +
+                    '<p class="text-sm text-red-600">An error occurred while searching for the user: ' + error.message + '</p>';
+            });
+    }
+    //]]>
+
+    //<![CDATA[
+    function loadAccountTypes() {
+        // Get the select element
+        const accountTypeSelect = document.getElementById('accountType');
+
+        if (!accountTypeSelect) {
+            console.error('Account type select element not found');
+            return;
+        }
+
+        // Show loading state
+        accountTypeSelect.disabled = true;
+        accountTypeSelect.innerHTML = '<option value="">Loading account types...</option>';
+
+        // Fetch account types from the server
+        fetch('loadAccountTypes')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Reset select with the default option
+                accountTypeSelect.innerHTML = '<option value="">Select Account Type</option>';
+
+                // Add each account type as an option
+                data.forEach(accountType => {
+                    const option = document.createElement('option');
+                    option.value = accountType.type;
+                    option.textContent = accountType.displayName;
+                    accountTypeSelect.appendChild(option);
+                });
+
+                // Enable the select element
+                accountTypeSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading account types:', error);
+                accountTypeSelect.innerHTML = '<option value="">Error loading account types</option>';
+                accountTypeSelect.disabled = false;
+            });
+    }
+
+    //<![CDATA[
+
+</script>
+
 </body>
 </html>
