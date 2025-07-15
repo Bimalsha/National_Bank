@@ -1,14 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%
-    // Check if user is logged in and has EMPLOYEE role
-    String userRole = (String) session.getAttribute("userRole");
-    Boolean authenticated = (Boolean) session.getAttribute("authenticated");
 
-    if (authenticated == null || !authenticated || !"EMPLOYEE".equals(userRole)) {
-        response.sendRedirect("index.jsp");
-        return;
-    }
-%>
 <html>
 <head>
     <title>National Bank - Employee Portal</title>
@@ -102,7 +93,7 @@
     <!-- Main Content -->
     <main class="flex-1 p-6">
         <!-- Dashboard Section -->
-        <section id="dashboard" class="section">
+        <section id="dashboard" class="section hidden">
             <h2 class="text-2xl font-semibold text-bank-blue mb-6">Dashboard</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -203,75 +194,48 @@
         </section>
 
         <!-- Add User Section -->
-        <section id="addUser" class="section hidden">
+        <section id="addUser" class="section ">
             <h2 class="text-2xl font-semibold text-bank-blue mb-6">Add New User</h2>
 
             <div class="bg-white rounded-lg shadow-md p-6">
-                <form>
+                <!-- Replace the existing form in the addUser section -->
+                <form id="addUserForm" action="registerCustomer" method="post">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label for="firstName" class="block text-gray-700 font-medium mb-2">First Name</label>
-                            <input type="text" id="firstName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                        </div>
-                        <div>
-                            <label for="lastName" class="block text-gray-700 font-medium mb-2">Last Name</label>
-                            <input type="text" id="lastName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Name</label>
+                            <input type="text" id="name" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
                         </div>
                         <div>
                             <label for="email" class="block text-gray-700 font-medium mb-2">Email Address</label>
-                            <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
+                            <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
+                        </div>
+                        <div>
+                            <label for="confirmEmail" class="block text-gray-700 font-medium mb-2">Confirm Email</label>
+                            <input type="email" id="confirmEmail" name="confirmEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
+                            <div id="emailMatchError" class="text-red-500 text-sm mt-1 hidden">Email addresses do not match</div>
                         </div>
                         <div>
                             <label for="phone" class="block text-gray-700 font-medium mb-2">Phone Number</label>
-                            <input type="tel" id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
+                            <input type="tel" id="phone" name="phone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
                         </div>
                         <div>
-                            <label for="dob" class="block text-gray-700 font-medium mb-2">Date of Birth</label>
-                            <input type="date" id="dob" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                        </div>
-                        <div>
-                            <label for="idType" class="block text-gray-700 font-medium mb-2">ID Type</label>
-                            <select id="idType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                                <option value="">Select ID Type</option>
-                                <option value="passport">Passport</option>
-                                <option value="driverLicense">Driver's License</option>
-                                <option value="nationalId">National ID</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="idNumber" class="block text-gray-700 font-medium mb-2">ID Number</label>
-                            <input type="text" id="idNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                        </div>
-                        <div>
-                            <label for="address" class="block text-gray-700 font-medium mb-2">Address</label>
-                            <input type="text" id="address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
+                            <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
+                            <input type="password" id="password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label for="city" class="block text-gray-700 font-medium mb-2">City</label>
-                            <input type="text" id="city" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                        </div>
-                        <div>
-                            <label for="state" class="block text-gray-700 font-medium mb-2">State/Province</label>
-                            <input type="text" id="state" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                        </div>
-                        <div>
-                            <label for="zipCode" class="block text-gray-700 font-medium mb-2">ZIP/Postal Code</label>
-                            <input type="text" id="zipCode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                        </div>
-                        <div>
-                            <label for="country" class="block text-gray-700 font-medium mb-2">Country</label>
-                            <select id="country" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                                <option value="">Select Country</option>
-                                <option value="us">United States</option>
-                                <option value="ca">Canada</option>
-                                <option value="uk">United Kingdom</option>
-                                <option value="au">Australia</option>
-                            </select>
-                        </div>
+                    <!-- Add these alerts for success/error messages -->
+                    <% if (request.getAttribute("successMessage") != null) { %>
+                    <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">
+                        <%= request.getAttribute("successMessage") %>
                     </div>
+                    <% } %>
+
+                    <% if (request.getAttribute("errorMessage") != null) { %>
+                    <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">
+                        <%= request.getAttribute("errorMessage") %>
+                    </div>
+                    <% } %>
 
                     <div class="flex justify-end">
                         <button type="reset" class="px-4 py-2 mr-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Reset</button>
@@ -682,7 +646,40 @@
         </section>
     </main>
 </div>
+// Add this script at the bottom of the page
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get email fields for the Add User form
+        const emailField = document.getElementById('email');
+        const confirmEmailField = document.getElementById('confirmEmail');
+        const emailError = document.getElementById('emailMatchError');
+        const form = document.getElementById('addUserForm');
 
+        // Function to check if emails match
+        function checkEmailsMatch() {
+            if (confirmEmailField.value && emailField.value !== confirmEmailField.value) {
+                emailError.classList.remove('hidden');
+                return false;
+            } else {
+                emailError.classList.add('hidden');
+                return true;
+            }
+        }
+
+        // Add event listeners
+        if (confirmEmailField && emailField) {
+            confirmEmailField.addEventListener('input', checkEmailsMatch);
+            emailField.addEventListener('input', checkEmailsMatch);
+
+            // Add form validation
+            form.addEventListener('submit', function(e) {
+                if (!checkEmailsMatch()) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
 <script>
     function showSection(sectionId) {
         // Hide all sections

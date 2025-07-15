@@ -32,6 +32,11 @@
             <artifactId>hibernate-jcache</artifactId>
             <version>6.6.16.Final</version>
         </dependency>
+        <dependency>
+            <groupId>jaas</groupId>
+            <artifactId>jaas</artifactId>
+            <version>1.0.1</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>${project.name}</finalName>
