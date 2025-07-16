@@ -96,9 +96,20 @@
     <!-- Main Content -->
     <main class="flex-1 p-6">
         <!-- Dashboard Section -->
-        <section id="dashboard" class="section hidden">
+        <section id="dashboard" class="section ">
             <h2 class="text-2xl font-semibold text-bank-blue mb-6">Dashboard</h2>
+            <!-- Add these alerts for success/error messages -->
+            <% if (request.getAttribute("successMessage") != null) { %>
+            <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">
+                <%= request.getAttribute("successMessage") %>
+            </div>
+            <% } %>
 
+            <% if (request.getAttribute("errorMessage") != null) { %>
+            <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">
+                <%= request.getAttribute("errorMessage") %>
+            </div>
+            <% } %>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <!-- Total Users Card -->
                 <div class="bg-white rounded-lg shadow-md p-6">
@@ -197,7 +208,7 @@
         </section>
 
         <!-- Add User Section -->
-        <section id="addUser" class="section ">
+        <section id="addUser" class="section  hidden">
             <h2 class="text-2xl font-semibold text-bank-blue mb-6">Add New User</h2>
 
             <div class="bg-white rounded-lg shadow-md p-6">
@@ -227,18 +238,7 @@
                         </div>
                     </div>
 
-                    <!-- Add these alerts for success/error messages -->
-                    <% if (request.getAttribute("successMessage") != null) { %>
-                    <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">
-                        <%= request.getAttribute("successMessage") %>
-                    </div>
-                    <% } %>
 
-                    <% if (request.getAttribute("errorMessage") != null) { %>
-                    <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">
-                        <%= request.getAttribute("errorMessage") %>
-                    </div>
-                    <% } %>
 
                     <div class="flex justify-end">
                         <button type="reset" class="px-4 py-2 mr-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Reset</button>
@@ -253,7 +253,7 @@
             <h2 class="text-2xl font-semibold text-bank-blue mb-6">Open New Account</h2>
 
             <div class="bg-white rounded-lg shadow-md p-6">
-                <form>
+                <form id="openAccountForm" action="openAccount" method="post">
                     <div class="mb-6">
                         <label for="userSearch" class="block text-gray-700 font-medium mb-2">Search User</label>
                         <div class="flex">
@@ -292,22 +292,13 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <span class="text-gray-500">LKR</span>
                                 </div>
-                                <input type="text" id="initialDeposit" class="w-full pl-8 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue" placeholder="0.00">
+                                <input type="text" id="initialDeposit" class="w-full pl-12 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue" placeholder="0.00">
                             </div>
                         </div>
 
-                        <div>
-                            <label for="branchCode" class="block text-gray-700 font-medium mb-2">Branch Code</label>
-                            <select id="branchCode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-bank-blue">
-                                <option value="">Select Branch</option>
-                                <option value="001">001 - Main Branch</option>
-                                <option value="002">002 - Downtown</option>
-                                <option value="003">003 - Westside</option>
-                                <option value="004">004 - North Hills</option>
-                            </select>
-                        </div>
-                    </div>
 
+                    </div>
+                    <input type="hidden" id="hiddenUserId" name="userId" value="">
                     <div class="flex justify-end">
                         <button type="reset" class="px-4 py-2 mr-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Reset</button>
                         <button type="submit" class="px-4 py-2 bg-bank-blue text-white rounded-md hover:bg-bank-blue-dark">Open Account</button>
@@ -708,7 +699,7 @@
 </script>
 
 <script>
-    //<![CDATA[
+
     function showSection(sectionId) {
         console.log('Showing section:', sectionId);
 
@@ -739,14 +730,13 @@
             menuItem.classList.add('border-l-4', 'border-bank-accent', 'text-bank-blue');
         }
     }
-    //]]>
+
 </script>
 
 <script>
-    //<![CDATA[
+
     function searchUser() {
-        console.log('Searching for user...');
-        // Get the search input value
+
         const searchInput = document.getElementById('userSearch');
         if (!searchInput) {
             console.error('Search input element not found');
@@ -805,7 +795,7 @@
                         '<div class="ml-4">' +
                         '<p class="font-medium">' + (user.name || 'Unknown') + '</p>' +
                         '<p class="text-sm text-gray-600">ID: ' + user.id + ' • Email: ' + (user.email || 'N/A') + ' • Contact: ' + (user.contact || 'N/A') + '</p>' +
-                        '<input type="hidden" name="userId" value="' + user.id + '">' +
+                        '<input type="hidden" name="userId" value="' + user.id + '" id="userId">' +
                         '</div>' +
                         '</div>';
                 } else {
@@ -823,9 +813,7 @@
                     '<p class="text-sm text-red-600">An error occurred while searching for the user: ' + error.message + '</p>';
             });
     }
-    //]]>
 
-    //<![CDATA[
     function loadAccountTypes() {
         // Get the select element
         const accountTypeSelect = document.getElementById('accountType');
@@ -869,7 +857,108 @@
             });
     }
 
-    //<![CDATA[
+
+    // Fix the openAccount form by adding name attributes to the elements
+    function fixOpenAccountForm() {
+        // 1. Add name attribute to accountType select element
+        const accountTypeSelect = document.getElementById('accountType');
+        if (accountTypeSelect) {
+            accountTypeSelect.setAttribute('name', 'accountType');
+        }
+
+        // 2. Add name attribute to initialDeposit input element
+        const initialDepositInput = document.getElementById('initialDeposit');
+        if (initialDepositInput) {
+            initialDepositInput.setAttribute('name', 'initialDeposit');
+        }
+
+        // 3. Ensure the user ID field exists and is properly named
+        let userIdInput = document.getElementById('userId');
+        if (!userIdInput) {
+            // If userId doesn't exist, update the hiddenUserId to have id="userId"
+            userIdInput = document.getElementById('hiddenUserId');
+            if (userIdInput) {
+                userIdInput.id = 'userId';
+            } else {
+                // Create it if it doesn't exist at all
+                const form = document.getElementById('openAccountForm');
+                userIdInput = document.createElement('input');
+                userIdInput.type = 'hidden';
+                userIdInput.id = 'userId';
+                userIdInput.name = 'userId';
+                userIdInput.value = '';
+                form.appendChild(userIdInput);
+            }
+        }
+    }
+
+    // Call this function when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        fixOpenAccountForm();
+        loadAccountTypes();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get references to the form and form elements
+        const form = document.getElementById('openAccountForm');
+        const accountTypeSelect = document.getElementById('accountType');
+        const initialDepositInput = document.getElementById('initialDeposit');
+
+        // Add name attributes to form controls
+        if (accountTypeSelect) accountTypeSelect.setAttribute('name', 'accountType');
+        if (initialDepositInput) initialDepositInput.setAttribute('name', 'initialDeposit');
+
+        // Make sure we have only one userId field
+        const existingUserIds = form.querySelectorAll('input[name="userId"]');
+        if (existingUserIds.length > 1) {
+            // Remove extra userId fields
+            for (let i = 1; i < existingUserIds.length; i++) {
+                existingUserIds[i].remove();
+            }
+        }
+
+        // If no userId field exists, create one
+        if (existingUserIds.length === 0) {
+            const userIdInput = document.createElement('input');
+            userIdInput.type = 'hidden';
+            userIdInput.id = 'hiddenUserId';
+            userIdInput.name = 'userId';
+            form.appendChild(userIdInput);
+        }
+
+        // Update the form submission to validate inputs
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get all form values
+            const userId = form.querySelector('input[name="userId"]').value;
+            const accountType = accountTypeSelect.value;
+            const initialDeposit = initialDepositInput.value;
+
+            console.log("Submitting form with:", {userId, accountType, initialDeposit});
+
+            // Validate inputs
+            if (!userId || userId.trim() === '') {
+                alert('Please select a user first');
+                return false;
+            }
+
+            if (!accountType || accountType.trim() === '') {
+                alert('Please select an account type');
+                return false;
+            }
+
+            if (!initialDeposit || initialDeposit.trim() === '' ||
+                isNaN(parseFloat(initialDeposit)) || parseFloat(initialDeposit) <= 0) {
+                alert('Please enter a valid initial deposit amount');
+                return false;
+            }
+
+            // If all validations pass, submit the form
+            this.submit();
+        });
+    });
+
 
 </script>
 
