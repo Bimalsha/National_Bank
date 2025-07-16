@@ -91,13 +91,47 @@ public class CustomerSearchBean implements CustomerSearchByEmail {
     }
 
     @Override
+    public Object findCustomerByAccountNumber(String accountNumber) {
+        logger.log(Level.INFO, "Searching for customer with account number: {0}", accountNumber);
+        try {
+            TypedQuery<User> query = entityManager.createQuery(
+                    "SELECT u FROM Account a JOIN a.user u JOIN u.userType ut WHERE a.accountNumber = :accountNumber AND ut.type = :userType", User.class);
+            query.setParameter("accountNumber", accountNumber);
+            query.setParameter("userType", "CUSTOMER");
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            logger.log(Level.INFO, "No customer found with account number: {0}", accountNumber);
+            return null;
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error finding customer by account number: " + accountNumber, e);
+            return null;
+        }
+    }
+
+    @Override
+    public List<Object> searchCustomersByAccountNumber(String accountNumberPattern) {
+        logger.log(Level.INFO, "Searching for customers with account number pattern: {0}", accountNumberPattern);
+        try {
+            TypedQuery<User> query = entityManager.createQuery(
+                    "SELECT DISTINCT u FROM Account a JOIN a.user u JOIN u.userType ut WHERE a.accountNumber LIKE :pattern AND ut.type = :userType", User.class);
+            query.setParameter("pattern", "%" + accountNumberPattern + "%");
+            query.setParameter("userType", "CUSTOMER");
+            List<User> users = query.getResultList();
+            return new ArrayList<>(users);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error searching customers by account number pattern: " + accountNumberPattern, e);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
     public List<Object> searchCustomers(String searchTerm) {
         logger.log(Level.INFO, "Searching for customers with term: {0}", searchTerm);
         try {
             TypedQuery<User> query = entityManager.createQuery(
-                    "SELECT u FROM User u JOIN u.userType ut WHERE (u.email LIKE :pattern " +
-                            "OR u.contact LIKE :pattern " +
-                            "OR u.name LIKE :pattern) AND ut.type = :userType", User.class);
+                    "SELECT DISTINCT u FROM User u LEFT JOIN Account a ON a.user = u JOIN u.userType ut " +
+                            "WHERE (u.email LIKE :pattern OR u.contact LIKE :pattern OR u.name LIKE :pattern OR a.accountNumber LIKE :pattern) " +
+                            "AND ut.type = :userType", User.class);
             query.setParameter("pattern", "%" + searchTerm + "%");
             query.setParameter("userType", "CUSTOMER");
             List<User> users = query.getResultList();
