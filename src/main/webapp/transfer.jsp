@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.bimalsha.ee.bank.entity.User" %>
+<%@ page import="com.bimalsha.ee.bank.entity.Account" %>
+<%@ page import="java.util.List" %>
 <html>
 <head>
     <title>National Bank - Transfer Money</title>
@@ -28,6 +31,24 @@
         <h1 class="text-2xl font-bold text-bank-blue">Transfer Money</h1>
     </div>
 
+    <%-- Get current user and their accounts --%>
+    <%
+        User currentUser = (User) session.getAttribute("user");
+        List<Account> accounts = null;
+
+        if (currentUser != null) {
+            // Get accounts from userAccounts session attribute
+            accounts = (List<Account>) session.getAttribute("userAccounts");
+
+            // Debug output
+            if (accounts == null) {
+                out.println("<!-- DEBUG: userAccounts is null -->");
+            } else {
+                out.println("<!-- DEBUG: Found " + accounts.size() + " accounts -->");
+            }
+        }
+    %>
+
     <!-- Transfer Form -->
     <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 p-6">
         <!-- Transfer Options Tabs -->
@@ -49,49 +70,50 @@
                     <label for="fromAccount" class="block text-gray-700 font-medium mb-2">From Account</label>
                     <select id="fromAccount" name="fromAccount" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" onchange="updateBalance('fromAccount', 'accountBalance')">
                         <option value="">Select an account</option>
-                        <option value="1234567890">Checking Account (**** 4587) - $24,562.00</option>
-                        <option value="2345678901">Savings Account (**** 8921) - $12,756.00</option>
-                        <option value="3456789012">Credit Card (**** 7654) - $6,736.00 available</option>
+                        <% if (accounts != null && !accounts.isEmpty()) {
+                            for (Account account : accounts) {
+                                String accountNum = account.getAccountNumber() != null ?
+                                        "**** " + account.getAccountNumber().substring(Math.max(0, account.getAccountNumber().length() - 4)) :
+                                        "**** ****";
+                                String balance = String.format("LKR%.2f", account.getBalance());
+                                String accountTypeStr = account.getAccountType() != null ? account.getAccountType().getType() : "N/A";
+                        %>
+                        <option value="<%= account.getAccountNumber() %>"><%= accountTypeStr %> Account (<%= accountNum %>) - <%= balance %></option>
+                        <%
+                            }
+                        } else {
+                        %>
+                        <option value="" disabled>No accounts available</option>
+                        <% } %>
                     </select>
                     <div id="accountBalance" class="mt-2 text-sm text-gray-600 hidden">
-                        Available balance: <span id="balanceAmount" class="font-medium">$0.00</span>
+                        Available balance: <span id="balanceAmount" class="font-medium">LKR 0.00</span>
                     </div>
                 </div>
 
                 <div class="mb-5">
                     <label for="toAccountNumber" class="block text-gray-700 font-medium mb-2">To Account Number</label>
-                    <input type="text" id="toAccountNumber" name="toAccountNumber" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's account number">
+                    <input type="text" id="toAccountNumber" name="toAccountNumber" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's account number" onblur="validateAccountNumber('toAccountNumber', 'recipientName')">
                 </div>
 
                 <div class="mb-5">
-                    <label for="recipientName" class="block text-gray-700 font-medium mb-2">Recipient Name</label>
-                    <input type="text" id="recipientName" name="recipientName" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's full name">
+                    <label for="recipientName" class="block text-gray-700 font-medium mb-2">Account Name</label>
+                    <input type="text" id="recipientName" name="recipientName" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's full name" readonly>
+                    <div id="recipientNameValidation" class="mt-1 text-sm hidden"></div>
                 </div>
 
                 <div class="mb-5">
                     <label for="amount" class="block text-gray-700 font-medium mb-2">Amount</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500">$</span>
+                            <span class="text-gray-500">LKR</span>
                         </div>
-                        <input type="text" id="amount" name="amount" class="w-full pl-8 px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="0.00">
+                        <input type="text" id="amount" name="amount" class="w-full pl-12 px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="0.00">
                     </div>
                 </div>
 
-                <div class="mb-5">
-                    <label for="transferReason" class="block text-gray-700 font-medium mb-2">Reason for Transfer</label>
-                    <select id="transferReason" name="transferReason" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue">
-                        <option value="personal">Personal Transfer</option>
-                        <option value="gift">Gift</option>
-                        <option value="payment">Payment for Goods/Services</option>
-                        <option value="rent">Rent/Mortgage</option>
-                        <option value="bills">Bill Payment</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
                 <div class="mb-6">
-                    <label for="transferNote" class="block text-gray-700 font-medium mb-2">Additional Note</label>
+                    <label for="transferNote" class="block text-gray-700 font-medium mb-2">Reason</label>
                     <input type="text" id="transferNote" name="transferNote" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Add more details about this transfer">
                 </div>
 
@@ -113,65 +135,52 @@
                     <label for="fromAccountSch" class="block text-gray-700 font-medium mb-2">From Account</label>
                     <select id="fromAccountSch" name="fromAccountSch" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" onchange="updateBalance('fromAccountSch', 'accountBalanceSch')">
                         <option value="">Select an account</option>
-                        <option value="1234567890">Checking Account (**** 4587) - $24,562.00</option>
-                        <option value="2345678901">Savings Account (**** 8921) - $12,756.00</option>
-                        <option value="3456789012">Credit Card (**** 7654) - $6,736.00 available</option>
+                        <% if (accounts != null && !accounts.isEmpty()) {
+                            for (Account account : accounts) {
+                                String accountNum = account.getAccountNumber() != null ?
+                                        "**** " + account.getAccountNumber().substring(Math.max(0, account.getAccountNumber().length() - 4)) :
+                                        "**** ****";
+                                String balance = String.format("LKR%.2f", account.getBalance());
+                                String accountTypeStr = account.getAccountType() != null ? account.getAccountType().getType() : "N/A";
+                        %>
+                        <option value="<%= account.getAccountNumber() %>"><%= accountTypeStr %> Account (<%= accountNum %>) - <%= balance %></option>
+                        <%
+                            }
+                        } else {
+                        %>
+                        <option value="" disabled>No accounts available</option>
+                        <% } %>
                     </select>
                     <div id="accountBalanceSch" class="mt-2 text-sm text-gray-600 hidden">
-                        Available balance: <span id="balanceAmountSch" class="font-medium">$0.00</span>
+                        Available balance: <span id="balanceAmountSch" class="font-medium">LKR 0.00</span>
                     </div>
                 </div>
 
                 <div class="mb-5">
                     <label for="toAccountNumberSch" class="block text-gray-700 font-medium mb-2">To Account Number</label>
-                    <input type="text" id="toAccountNumberSch" name="toAccountNumberSch" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's account number">
+                    <input type="text" id="toAccountNumberSch" name="toAccountNumberSch" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's account number" onblur="validateAccountNumber('toAccountNumberSch', 'recipientNameSch')">
                 </div>
 
                 <div class="mb-5">
-                    <label for="recipientNameSch" class="block text-gray-700 font-medium mb-2">Recipient Name</label>
-                    <input type="text" id="recipientNameSch" name="recipientNameSch" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's full name">
+                    <label for="recipientNameSch" class="block text-gray-700 font-medium mb-2">Account Name</label>
+                    <input type="text" id="recipientNameSch" name="recipientNameSch" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="Enter recipient's full name" readonly>
+                    <div id="recipientNameSchValidation" class="mt-1 text-sm hidden"></div>
                 </div>
 
                 <div class="mb-5">
                     <label for="amountSch" class="block text-gray-700 font-medium mb-2">Amount</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500">$</span>
+                            <span class="text-gray-500">LKR</span>
                         </div>
-                        <input type="text" id="amountSch" name="amountSch" class="w-full pl-8 px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="0.00">
+                        <input type="text" id="amountSch" name="amountSch" class="w-full pl-12 px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue" placeholder="0.00">
                     </div>
-                </div>
-
-                <div class="mb-5">
-                    <label for="transferReasonSch" class="block text-gray-700 font-medium mb-2">Reason for Transfer</label>
-                    <select id="transferReasonSch" name="transferReasonSch" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue">
-                        <option value="personal">Personal Transfer</option>
-                        <option value="gift">Gift</option>
-                        <option value="payment">Payment for Goods/Services</option>
-                        <option value="rent">Rent/Mortgage</option>
-                        <option value="bills">Bill Payment</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
-                <div class="mb-5">
-                    <label for="frequency" class="block text-gray-700 font-medium mb-2">Frequency</label>
-                    <select id="frequency" name="frequency" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue">
-                        <option value="once">One-time</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="biweekly">Bi-weekly</option>
-                        <option value="monthly">Monthly</option>
-                    </select>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                     <div>
-                        <label for="startDate" class="block text-gray-700 font-medium mb-2">Date</label>
-                        <input type="date" id="startDate" name="startDate" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue">
-                    </div>
-                    <div>
-                        <label for="startTime" class="block text-gray-700 font-medium mb-2">Time</label>
-                        <input type="time" id="startTime" name="startTime" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue">
+                        <label for="startDate" class="block text-gray-700 font-medium mb-2">Date Time</label>
+                        <input type="datetime-local" id="startDate" name="startDate" class="w-full px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-bank-blue">
                     </div>
                 </div>
 
@@ -244,74 +253,78 @@
         // Extract balance from the selected option text
         const selectedOption = selectElement.options[selectElement.selectedIndex];
         const optionText = selectedOption.text;
-        const balanceMatch = optionText.match(/\$([0-9,]+\.[0-9]{2})/);
+        // Match "LKR" followed by any digits, commas, and a decimal point with 2 digits
+        const balanceMatch = optionText.match(/LKR([0-9.,]+)/);
 
-        if (balanceMatch && balanceMatch[0]) {
-            balanceText.textContent = balanceMatch[0];
+        if (balanceMatch) {
+            balanceText.textContent = 'LKR ' + balanceMatch[1].trim();
             balanceContainer.classList.remove('hidden');
         } else {
             balanceContainer.classList.add('hidden');
         }
     }
 
-    // Form validation for standard transfer
-    document.getElementById('standardTransferForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Function to validate account number and fetch account holder name
+    function validateAccountNumber(accountFieldId, nameFieldId) {
+        const accountNumber = document.getElementById(accountFieldId).value.trim();
+        const nameField = document.getElementById(nameFieldId);
+        const validationDiv = document.getElementById(nameFieldId + 'Validation');
 
-        const fromAccount = document.getElementById('fromAccount').value.trim();
-        const toAccount = document.getElementById('toAccountNumber').value.trim();
-        const recipientName = document.getElementById('recipientName').value.trim();
-        const amount = document.getElementById('amount').value.trim();
-
-        if (!fromAccount || !toAccount || !recipientName || !amount) {
-            alert('Please fill in all required fields.');
-            return false;
+        if (!accountNumber) {
+            nameField.value = '';
+            nameField.readOnly = true;
+            validationDiv.classList.add('hidden');
+            return;
         }
 
-        if (fromAccount === toAccount) {
-            alert('Please enter different account numbers for sender and recipient.');
-            return false;
-        }
+        // Show loading state
+        nameField.value = 'Checking...';
+        nameField.readOnly = true;
+        validationDiv.textContent = '';
+        validationDiv.classList.add('hidden');
 
-        if (!amount || isNaN(parseFloat(amount))) {
-            alert('Please enter a valid amount.');
-            return false;
-        }
-
-        // If validation passes
-        alert('Transfer initiated successfully!');
-        window.close();
-    });
-
-    // Form validation for scheduled transfer
-    document.getElementById('scheduledTransferForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const fromAccount = document.getElementById('fromAccountSch').value.trim();
-        const toAccount = document.getElementById('toAccountNumberSch').value.trim();
-        const recipientName = document.getElementById('recipientNameSch').value.trim();
-        const amount = document.getElementById('amountSch').value.trim();
-        const date = document.getElementById('startDate').value;
-
-        if (!fromAccount || !toAccount || !recipientName || !amount || !date) {
-            alert('Please fill in all required fields.');
-            return false;
-        }
-
-        if (fromAccount === toAccount) {
-            alert('Please enter different account numbers for sender and recipient.');
-            return false;
-        }
-
-        if (!amount || isNaN(parseFloat(amount))) {
-            alert('Please enter a valid amount.');
-            return false;
-        }
-
-        // If validation passes
-        alert('Transfer scheduled successfully!');
-        window.close();
-    });
+        // Make AJAX call to validate account
+        fetch('validateAccount?accountNumber=' + encodeURIComponent(accountNumber), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.valid) {
+                    // Account found, set the name
+                    nameField.value = data.accountHolderName;
+                    nameField.readOnly = true;
+                    nameField.classList.remove('border-red-500');
+                    validationDiv.classList.add('hidden');
+                } else {
+                    // Account not found, allow manual entry
+                    nameField.value = '';
+                    nameField.readOnly = false;
+                    nameField.focus();
+                    validationDiv.textContent = data.message;
+                    validationDiv.classList.remove('hidden');
+                    validationDiv.classList.remove('text-red-500');
+                    validationDiv.classList.add('text-yellow-600');
+                }
+            })
+            .catch(error => {
+                console.error('Error validating account:', error);
+                nameField.value = '';
+                nameField.readOnly = false;
+                nameField.focus();
+                validationDiv.textContent = 'Error validating account. Please enter recipient name manually.';
+                validationDiv.classList.remove('hidden');
+                validationDiv.classList.remove('text-red-500');
+                validationDiv.classList.add('text-yellow-600');
+            });
+    }
 </script>
 </body>
 </html>

@@ -88,32 +88,54 @@
     </div>
 
     <!-- Account Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Balance Card -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 col-span-full">Account Overview</h2>
+
+        <%-- Display accounts the user has --%>
+        <%
+            if (accounts != null && !accounts.isEmpty()) {
+                boolean isPrimary = true;
+                for (Account account : accounts) {
+                    String accountNum = account.getAccountNumber() != null ?
+                            "**** " + account.getAccountNumber().substring(Math.max(0, account.getAccountNumber().length() - 4)) :
+                            "**** ****";
+                    String balance = String.format("LKR%.2f", account.getBalance());
+                    String accountTypeStr = account.getAccountType() != null ? account.getAccountType().getType() : "N/A";
+        %>
+        <!-- Existing Account Card -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-700">Current Balance</h3>
-                    <span class="bg-blue-100 text-bank-blue text-xs px-2 py-1 rounded-full">Primary</span>
+                    <h3 class="text-lg font-semibold text-gray-700"><%= accountTypeStr %> Account</h3>
+                    <span class="<%= isPrimary ? "bg-blue-100 text-bank-blue" : "bg-gray-100 text-gray-700" %> text-xs px-2 py-1 rounded-full">
+                    <%= isPrimary ? "Primary" : "Active" %>
+                </span>
                 </div>
-                <p class="text-3xl font-bold text-gray-800 mb-1">LKR24,562.00</p>
+                <p class="text-3xl font-bold text-gray-800 mb-1"><%= balance %></p>
                 <p class="text-sm text-gray-500">Available Balance</p>
                 <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
                     <div>
                         <p class="text-xs text-gray-500">Account Number</p>
-                        <p class="text-sm font-medium">424254587</p>
+                        <p class="text-sm font-medium"><%= accountNum %></p>
                     </div>
                     <div>
                         <p class="text-xs text-gray-500">Account Type</p>
-                        <p class="text-sm font-medium">Checking</p>
+                        <p class="text-sm font-medium"><%= accountTypeStr %></p>
                     </div>
                 </div>
             </div>
         </div>
-
-
+        <%
+                isPrimary = false;
+            }
+        } else {
+        %>
+        <!-- No accounts found -->
+        <div class="col-span-full bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 p-6 text-center">
+            <p class="text-gray-700 mb-2">No accounts available.</p>
+        </div>
+        <% } %>
     </div>
-
     <!-- Quick Actions -->
     <div class="mb-8">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>

@@ -22,6 +22,7 @@ public class UserType implements Serializable {
     public UserType() {
     }
 
+
     // Getters and Setters
     public Integer getId() {
         return id;

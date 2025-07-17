@@ -12,7 +12,7 @@ public class Account implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "account _number", nullable = false, length = 45)
+    @Column(name = "account_number", nullable = false, length = 45)
     private String accountNumber;
 
     @Column(name = "balance", nullable = false)
