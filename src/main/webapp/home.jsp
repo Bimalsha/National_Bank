@@ -1,4 +1,32 @@
+<%@ page import="com.bimalsha.ee.bank.entity.User" %>
+<%@ page import="com.bimalsha.ee.bank.entity.Account" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    // Get user from session
+    User user = (User) session.getAttribute("user");
+    String userName = user != null ? user.getName() : "Guest";
+    String userEmail = user != null ? user.getEmail() : "";
+    String userContact = user != null ? user.getContact() : "";
+
+
+    // Get accounts from session
+    List<Account> accounts = (List<Account>) session.getAttribute("userAccounts");
+    Account primaryAccount = accounts != null && !accounts.isEmpty() ? accounts.get(0) : null;
+
+    // Format account details
+    String accountNumber = primaryAccount != null && primaryAccount.getAccountNumber() != null ?
+            "**** " + primaryAccount.getAccountNumber().substring(Math.max(0, primaryAccount.getAccountNumber().length() - 4)) :
+            "**** ****";
+    String accountBalance = primaryAccount != null ?
+            String.format("$%.2f", primaryAccount.getBalance()) :
+            "$0.00";
+
+    // Format date
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
+    String currentDate = dateFormat.format(new java.util.Date());
+%>
 <html>
 <head>
     <title>National Bank - Dashboard</title>
@@ -18,7 +46,7 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 font-sans min-h-screen">
+<body class="bg-gray-50 font-sans min-h-screen" onload="LoadUserProfile();">
 <!-- Navigation -->
 <nav class="bg-gradient-to-r from-bank-blue to-bank-blue-dark text-white shadow-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,11 +66,13 @@
                     </button>
                 </div>
                 <div class="flex items-center">
-                    <img src="https://via.placeholder.com/40" alt="User" class="w-8 h-8 rounded-full mr-2">
-                    <span class="mr-1">John Doe</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
+
+                    <span class="mr-1"><%= userName %></span>
+                    <form action="logout" method="get" style="display:inline;" class="flex items-center">
+                        <button type="submit" class="bg-bank-blue-dark hover:bg-bank-accent px-3 py-1 rounded-md transition-colors ">
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -53,8 +83,8 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Welcome and Quick Stats -->
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Welcome back, John!</h1>
-        <p class="text-gray-600">Here's your financial summary as of ${currentDate}</p>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Welcome back, <%= userName %>!</h1>
+        <p class="text-gray-600">Here's your financial summary as of <%= currentDate %></p>
     </div>
 
     <!-- Account Overview -->
@@ -66,12 +96,12 @@
                     <h3 class="text-lg font-semibold text-gray-700">Current Balance</h3>
                     <span class="bg-blue-100 text-bank-blue text-xs px-2 py-1 rounded-full">Primary</span>
                 </div>
-                <p class="text-3xl font-bold text-gray-800 mb-1">$24,562.00</p>
+                <p class="text-3xl font-bold text-gray-800 mb-1">LKR24,562.00</p>
                 <p class="text-sm text-gray-500">Available Balance</p>
                 <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
                     <div>
                         <p class="text-xs text-gray-500">Account Number</p>
-                        <p class="text-sm font-medium">**** 4587</p>
+                        <p class="text-sm font-medium">424254587</p>
                     </div>
                     <div>
                         <p class="text-xs text-gray-500">Account Type</p>
@@ -81,49 +111,7 @@
             </div>
         </div>
 
-        <!-- Savings Card -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-700">Savings</h3>
-                    <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">2.5% APY</span>
-                </div>
-                <p class="text-3xl font-bold text-gray-800 mb-1">$12,756.00</p>
-                <p class="text-sm text-gray-500">Available Balance</p>
-                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
-                    <div>
-                        <p class="text-xs text-gray-500">Account Number</p>
-                        <p class="text-sm font-medium">**** 8921</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500">Account Type</p>
-                        <p class="text-sm font-medium">Savings</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Credit Card -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-700">Credit Card</h3>
-                    <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">Visa Platinum</span>
-                </div>
-                <p class="text-3xl font-bold text-gray-800 mb-1">$3,264.00</p>
-                <p class="text-sm text-gray-500">Current Balance</p>
-                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
-                    <div>
-                        <p class="text-xs text-gray-500">Card Number</p>
-                        <p class="text-sm font-medium">**** 7654</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500">Available Credit</p>
-                        <p class="text-sm font-medium">$6,736.00</p>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Quick Actions -->
@@ -285,20 +273,17 @@
                         <div class="space-y-3">
                             <div>
                                 <p class="text-sm text-gray-500">Full Name</p>
-                                <p class="font-medium">John A. Doe</p>
+                                <p class="font-medium"><%=userName%></p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Email Address</p>
-                                <p class="font-medium">john.doe@example.com</p>
+                                <p class="font-medium"><%=userEmail%></p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Phone Number</p>
-                                <p class="font-medium">(555) 123-4567</p>
+                                <p class="font-medium"><%=userContact%></p>
                             </div>
-                            <div>
-                                <p class="text-sm text-gray-500">Address</p>
-                                <p class="font-medium">123 Main Street, Anytown, CA 12345</p>
-                            </div>
+
                         </div>
                     </div>
                     <div>
@@ -345,4 +330,51 @@
     </div>
 </footer>
 </body>
+<script>
+    function LoadUserProfile() {
+        // Check if user data is already loaded
+        <% if (user != null && session.getAttribute("userId") != null) { %>
+        // User data already loaded, don't fetch again
+        console.log("User session already loaded. User ID: <%= session.getAttribute("userId") %>");
+        return;
+        <% } %>
+
+        <% if (user != null) { %>
+        // Pass userId as a URL parameter
+        fetch('loadUserSession?userId=<%= user.getId() %>', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        <% } else { %>
+        // No user object available, try regular request
+        fetch('loadUserSession', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        <% } %>
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load user data');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Instead of reloading the page, update the user info directly
+                    console.log("User session loaded successfully");
+                    // Only reload if necessary (first load)
+                    <% if (user == null) { %>
+                    location.reload();
+                    <% } %>
+                }
+            })
+            .catch(error => {
+                console.error('Error loading user profile:', error);
+            });
+    }
+</script>
 </html>

@@ -34,9 +34,13 @@
         </div>
         <div class="flex items-center">
             <span class="mr-4">Welcome, Admin</span>
-            <button class="bg-bank-blue-dark hover:bg-bank-accent px-3 py-1 rounded-md transition-colors">
-                Logout
-            </button>
+
+            <form action="logout" method="get" style="display:inline;">
+                <button type="submit" class="bg-bank-blue-dark hover:bg-bank-accent px-3 py-1 rounded-md transition-colors">
+                    Logout
+                </button>
+            </form>
+
         </div>
     </div>
 </header>
