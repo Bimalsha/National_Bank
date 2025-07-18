@@ -325,6 +325,236 @@
                 validationDiv.classList.add('text-yellow-600');
             });
     }
+
+    // Replace the existing DOMContentLoaded event listener with this updated version
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set form action and method attributes for both forms
+        const standardForm = document.getElementById('standardTransferForm');
+        standardForm.setAttribute('action', 'transferMoney');
+        standardForm.setAttribute('method', 'post');
+
+        const scheduledForm = document.getElementById('scheduledTransferForm');
+        scheduledForm.setAttribute('action', 'transferMoney');
+        scheduledForm.setAttribute('method', 'post');
+
+        // Client-side validation for standard transfer form
+        standardForm.addEventListener('submit', function(e) {
+            if (!validateForm('standard')) {
+                e.preventDefault(); // Stop form submission if validation fails
+            } else {
+                // Set a flag to track form submission
+                sessionStorage.setItem('transferSubmitted', 'true');
+            }
+        });
+
+        // Client-side validation for scheduled transfer form
+        scheduledForm.addEventListener('submit', function(e) {
+            if (!validateForm('scheduled')) {
+                e.preventDefault(); // Stop form submission if validation fails
+            } else {
+                // Set a flag to track form submission
+                sessionStorage.setItem('transferSubmitted', 'true');
+            }
+        });
+
+        // Display error messages from request attributes if any
+        const errorMessages = <%= request.getAttribute("errors") != null ?
+                           "JSON.parse('" + request.getAttribute("errors").toString().replace("'", "\\'") + "')" :
+                           "null" %>;
+
+        if (errorMessages) {
+            for (const [field, message] of Object.entries(errorMessages)) {
+                displayError(field, message);
+            }
+
+            // Show general error at the top if exists
+            if (errorMessages.general) {
+                showErrorAlert(errorMessages.general);
+            }
+
+            // Clear the submission flag if there were errors
+            sessionStorage.removeItem('transferSubmitted');
+        }
+
+        // Display success message from session if any
+        const transferSuccess = <%= session.getAttribute("transferSuccess") != null ?
+                             session.getAttribute("transferSuccess") : "false" %>;
+
+        if (transferSuccess) {
+            const successMessage = "<%= session.getAttribute("transferMessage") != null ?
+                               session.getAttribute("transferMessage") : "Transfer successful" %>";
+
+            // Show success message
+            showSuccessAlert(successMessage);
+
+            <% session.removeAttribute("transferSuccess"); %>
+            <% session.removeAttribute("transferMessage"); %>
+
+            // Clear the submission flag
+            sessionStorage.removeItem('transferSubmitted');
+
+            // Close window and refresh parent after showing success message
+            setTimeout(() => {
+                // If this window was opened by another window (popup)
+                if (window.opener && !window.opener.closed) {
+                    // Refresh the parent/opener window
+                    window.opener.location.reload();
+                    // Close this window
+                    window.close();
+                } else {
+                    // If not a popup, close window and redirect to home
+                    window.location.href = 'home.jsp';
+                    window.close();
+                }
+            }, 2000); // Wait 2 seconds to show the success message
+        }
+
+        // Check if returning from a successful form submission
+        if (sessionStorage.getItem('transferSubmitted') === 'true' &&
+            !errorMessages && !<%= request.getAttribute("errorMessage") != null %>) {
+
+            // If we have the submission flag but no errors, and no success message was set in the session,
+            // assume the operation succeeded but didn't set the session attributes
+            if (!transferSuccess) {
+                const defaultSuccessMsg = "Transfer completed successfully";
+                showSuccessAlert(defaultSuccessMsg);
+
+                // Clear the submission flag
+                sessionStorage.removeItem('transferSubmitted');
+
+                // Close window and refresh parent
+                setTimeout(() => {
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.location.reload();
+                        window.close();
+                    } else {
+                        window.location.href = 'home.jsp';
+                        window.close();
+                    }
+                }, 2000);
+            }
+        }
+
+        // Form validation function
+        function validateForm(formType) {
+            let isValid = true;
+            clearErrors();
+
+            if (formType === 'standard') {
+                // Validate source account
+                if (!document.getElementById('fromAccount').value) {
+                    displayError('fromAccount', 'Source account is required');
+                    isValid = false;
+                }
+
+                // Validate destination account
+                if (!document.getElementById('toAccountNumber').value) {
+                    displayError('toAccountNumber', 'Destination account is required');
+                    isValid = false;
+                }
+
+                // Validate amount
+                const amount = document.getElementById('amount').value;
+                if (!amount) {
+                    displayError('amount', 'Amount is required');
+                    isValid = false;
+                } else if (parseFloat(amount.replace(',', '')) <= 0) {
+                    displayError('amount', 'Amount must be greater than zero');
+                    isValid = false;
+                }
+            } else {
+                // Validate source account (scheduled)
+                if (!document.getElementById('fromAccountSch').value) {
+                    displayError('fromAccountSch', 'Source account is required');
+                    isValid = false;
+                }
+
+                // Validate destination account (scheduled)
+                if (!document.getElementById('toAccountNumberSch').value) {
+                    displayError('toAccountNumberSch', 'Destination account is required');
+                    isValid = false;
+                }
+
+                // Validate amount (scheduled)
+                const amount = document.getElementById('amountSch').value;
+                if (!amount) {
+                    displayError('amountSch', 'Amount is required');
+                    isValid = false;
+                } else if (parseFloat(amount.replace(',', '')) <= 0) {
+                    displayError('amountSch', 'Amount must be greater than zero');
+                    isValid = false;
+                }
+
+                // Validate scheduled date
+                if (!document.getElementById('startDate').value) {
+                    displayError('startDate', 'Schedule date is required');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        // Helper function to display field errors
+        function displayError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+
+            field.classList.add('border-red-500');
+
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
+            errorDiv.textContent = message;
+
+            // Insert after the field
+            field.parentNode.insertBefore(errorDiv, field.nextSibling);
+        }
+
+        // Helper function to clear all errors
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(el => el.remove());
+            document.querySelectorAll('.border-red-500').forEach(el => {
+                el.classList.remove('border-red-500');
+            });
+        }
+
+        // Function to show success alert
+        function showSuccessAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
+            alertDiv.innerHTML = `
+            <div class="flex">
+                <svg class="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
+
+            // Insert at the top of the form container
+            const container = document.querySelector('.max-w-2xl');
+            container.insertBefore(alertDiv, container.firstChild);
+        }
+
+        // Function to show error alert
+        function showErrorAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+            alertDiv.innerHTML = `
+            <div class="flex">
+                <svg class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
+
+            // Insert at the top of the form container
+            const container = document.querySelector('.max-w-2xl');
+            container.insertBefore(alertDiv, container.firstChild);
+        }
+    });
 </script>
 </body>
 </html>

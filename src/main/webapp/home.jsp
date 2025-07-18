@@ -151,10 +151,10 @@
             <a href="#" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center hover:shadow-md transition-all">
                 <div class="bg-green-100 p-3 rounded-full mb-3">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                 </div>
-                <span class="text-gray-700 font-medium">Receive Money</span>
+                <span class="text-gray-700 font-medium">Get Statement</span>
             </a>
             <a href="#" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center hover:shadow-md transition-all">
                 <div class="bg-purple-100 p-3 rounded-full mb-3">
@@ -179,11 +179,12 @@
     <div class="mb-8">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-gray-800">Recent Transactions</h2>
-            <a href="#" class="text-bank-accent hover:underline text-sm font-medium">View All</a>
+            <a href="transactionHistory" class="text-bank-accent hover:underline text-sm font-medium">View All</a>
         </div>
         <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+            <div id="transaction-error" class="text-red-500 text-sm text-center py-2 hidden"></div>
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table id="recent-transactions-table" class="w-full">
                     <thead>
                     <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         <th class="px-6 py-3">Description</th>
@@ -194,88 +195,10 @@
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
+                    <!-- Transaction rows will be loaded here -->
                     <tr>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="bg-blue-100 p-2 rounded-full mr-3">
-                                    <svg class="w-4 h-4 text-bank-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-gray-900">Direct Deposit</div>
-                                    <div class="text-gray-500 text-sm">Payroll</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Jul 12, 2025</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Income</td>
-                        <td class="px-6 py-4 text-sm font-medium text-green-600">+$2,500.00</td>
-                        <td class="px-6 py-4 text-sm">
-                            <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Completed</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="bg-red-100 p-2 rounded-full mr-3">
-                                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-gray-900">Amazon Purchase</div>
-                                    <div class="text-gray-500 text-sm">Shopping</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Jul 10, 2025</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Shopping</td>
-                        <td class="px-6 py-4 text-sm font-medium text-red-600">-$129.99</td>
-                        <td class="px-6 py-4 text-sm">
-                            <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Completed</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="bg-red-100 p-2 rounded-full mr-3">
-                                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-gray-900">Electricity Bill</div>
-                                    <div class="text-gray-500 text-sm">Utilities</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Jul 8, 2025</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Bills</td>
-                        <td class="px-6 py-4 text-sm font-medium text-red-600">-$85.75</td>
-                        <td class="px-6 py-4 text-sm">
-                            <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Completed</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="bg-purple-100 p-2 rounded-full mr-3">
-                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-gray-900">Transfer to Savings</div>
-                                    <div class="text-gray-500 text-sm">Internal Transfer</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Jul 5, 2025</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">Transfer</td>
-                        <td class="px-6 py-4 text-sm font-medium text-red-600">-$500.00</td>
-                        <td class="px-6 py-4 text-sm">
-                            <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Completed</span>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            Loading transactions...
                         </td>
                     </tr>
                     </tbody>
@@ -398,5 +321,146 @@
                 console.error('Error loading user profile:', error);
             });
     }
+
 </script>
+
+<script>
+    // Initialize when the DOM is ready
+    document.addEventListener("DOMContentLoaded", function() {
+        // Set userId as a JavaScript variable
+        var currentUserId = <%= session.getAttribute("userId") != null ? session.getAttribute("userId") : "null" %>;
+
+        // Load transactions after the page loads
+        loadRecentTransactions();
+    });
+
+    function loadRecentTransactions() {
+        // Show loading state
+        const transactionsTable = document.getElementById('recent-transactions-table');
+        const tbody = transactionsTable.querySelector('tbody');
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading transactions...</td></tr>';
+
+        // Hide any previous errors
+        document.getElementById('transaction-error').classList.add('hidden');
+
+        fetch('transactionHistory?limit=5', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load transaction data');
+                }
+                return response.json();
+            })
+            .then(data => {
+                tbody.innerHTML = '';
+                console.log("Transaction data received:", data);
+
+                const currentUserId = data.currentUserId;
+
+                if (data.transactions && data.transactions.length > 0) {
+                    data.transactions.forEach(transaction => {
+                        const row = createTransactionRow(transaction, currentUserId);
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    // No transactions found
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        No recent transactions found
+                    </td>
+                `;
+                    tbody.appendChild(emptyRow);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading transactions:', error);
+                document.getElementById('transaction-error').textContent = 'Error loading transaction data';
+                document.getElementById('transaction-error').classList.remove('hidden');
+            });
+    }
+    function createTransactionRow(transaction, currentUserId) {
+        const row = document.createElement('tr');
+
+        // Determine if this is an outgoing or incoming transaction
+        const isOutgoing = transaction.fromAccount.user &&
+            transaction.fromAccount.user.id === currentUserId;
+
+        // Description cell with account information and reason
+        const descCell = document.createElement('td');
+        descCell.className = 'px-6 py-4';
+
+        // Get the other party name or account number
+        const otherParty = isOutgoing ?
+            (transaction.toAccount.user ? transaction.toAccount.user.name : 'Account #' + transaction.toAccount.accountNumber) :
+            (transaction.fromAccount.user ? transaction.fromAccount.user.name : 'Account #' + transaction.fromAccount.accountNumber);
+
+        // Create description HTML content
+        let descHtml = '<div class="flex flex-col">';
+        descHtml += '<div class="text-sm font-medium text-gray-900">';
+        descHtml += (isOutgoing ? 'To: ' : 'From: ') + otherParty;
+        descHtml += '</div>';
+        descHtml += '<div class="text-xs text-gray-500 mt-1">';
+        descHtml += '<div>From: ' + transaction.fromAccount.accountNumber + '</div>';
+        descHtml += '<div>To: ' + transaction.toAccount.accountNumber + '</div>';
+        descHtml += '</div>';
+
+        // Add reason if available
+        if (transaction.reason) {
+            descHtml += '<div class="text-xs italic text-gray-500 mt-1">' + transaction.reason + '</div>';
+        }
+
+        descHtml += '</div>';
+        descCell.innerHTML = descHtml;
+
+        // Date cell
+        const dateCell = document.createElement('td');
+        dateCell.className = 'px-6 py-4';
+        const date = new Date(transaction.dateTime);
+        const formattedDate = date.toLocaleDateString();
+        const formattedTime = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        let dateHtml = '<div class="text-sm font-medium text-gray-900">' + formattedDate + '</div>';
+        dateHtml += '<div class="text-xs text-gray-500">' + formattedTime + '</div>';
+        dateCell.innerHTML = dateHtml;
+
+        // Type cell
+        const typeCell = document.createElement('td');
+        typeCell.className = 'px-6 py-4';
+        typeCell.innerHTML = '<span class="text-sm font-medium">Transfer</span>';
+
+        // Amount cell with proper formatting
+        const amountCell = document.createElement('td');
+        amountCell.className = 'px-6 py-4';
+        const amountFormatted = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'LKR',
+            minimumFractionDigits: 2
+        }).format(transaction.amount);
+
+        let amountHtml = '<div class="text-sm ' + (isOutgoing ? 'text-red-600' : 'text-green-600') + ' font-bold">';
+        amountHtml += (isOutgoing ? '-' : '+') + ' ' + amountFormatted;
+        amountHtml += '</div>';
+        amountCell.innerHTML = amountHtml;
+
+        // Status cell
+        const statusCell = document.createElement('td');
+        statusCell.className = 'px-6 py-4';
+        statusCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>';
+
+        // Add all cells to the row
+        row.appendChild(descCell);
+        row.appendChild(dateCell);
+        row.appendChild(typeCell);
+        row.appendChild(amountCell);
+        row.appendChild(statusCell);
+
+        return row;
+    }
+</script>
+
 </html>
