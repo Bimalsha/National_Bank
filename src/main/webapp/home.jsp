@@ -179,7 +179,7 @@
     <div class="mb-8">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-gray-800">Recent Transactions</h2>
-            <a href="transactionHistory" class="text-bank-accent hover:underline text-sm font-medium">View All</a>
+            <a href="transaction-history.jsp" class="text-bank-accent hover:underline text-sm font-medium">View All</a>
         </div>
         <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
             <div id="transaction-error" class="text-red-500 text-sm text-center py-2 hidden"></div>
